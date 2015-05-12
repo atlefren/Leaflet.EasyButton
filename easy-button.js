@@ -7,12 +7,15 @@ L.Control.EasyButtons = L.Control.extend({
     options: {
         position: 'topleft',
         title: '',
-        icon: 'fa-circle-o'
+        icon: 'fa-circle-o',
+        toggle: false,
+        toggleClass: 'easy-icon-on'
     },
 
     initialize: function (callback, options) {
         L.setOptions(this, options);
         this.callback = callback;
+        this._isOn = false;
     },
 
     onAdd: function () {
@@ -28,14 +31,31 @@ L.Control.EasyButtons = L.Control.extend({
         return container;
     },
 
-    _click: function (e) {
-        L.DomEvent.stopPropagation(e);
-        L.DomEvent.preventDefault(e);
-        if (typeof this.callback === 'function') {
-            this.callback();
+    _callCallback: function (callback)  {
+        if (this.callback && typeof this.callback === 'function') {
+            callback();
         } else {
             throw new Error('no function selected');
         }
+    },
+
+    _click: function (e) {
+        L.DomEvent.stopPropagation(e);
+        L.DomEvent.preventDefault(e);
+        if (!this.options.toggle) {
+            this._callCallback(this.callback);
+        } else {
+            if (this._isOn) {
+                L.DomUtil.addClass(this.link, this.options.toggleClass);
+                this._callCallback(this.offCallback);
+            } else {
+                L.DomUtil.removeClass(this.link, this.options.toggleClass);
+                this._callCallback(this.callback);
+            }
+
+            this._isOn = !this._isOn;
+        }
+        
     },
 
     _addImage: function () {
